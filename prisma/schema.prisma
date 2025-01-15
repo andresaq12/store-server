@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// model Post {
+//   id        Int      @id @default(autoincrement())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   title     String   @db.VarChar(255)
+//   content   String?
+//   published Boolean  @default(false)
+//   author    User     @relation(fields: [authorId], references: [id])
+//   authorId  Int
+// }
+
+// model Profile {
+//   id     Int     @id @default(autoincrement())
+//   bio    String?
+//   user   User    @relation(fields: [userId], references: [id])
+//   userId Int     @unique
+// }
+
+// model User {
+//   id      Int      @id @default(autoincrement())
+//   email   String   @unique
+//   name    String?
+//   posts   Post[]
+//   profile Profile?
+// }
+
+model User {
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(255)
+  email      String     @db.VarChar(255)
+  password   String?
+  google_id  String     @db.VarChar(255)
+  photo      String?
+  orders     Order[]
+  address    String     @db.VarChar(255)
+  rol        Role       @default(user)
+  status     UserStatus @default(active)
+  created_at DateTime   @default(now())
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
+model Product {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  description  String         @db.VarChar(255)
+  brand        String         @db.VarChar(255)
+  price        Decimal        @db.Decimal(10, 2)
+  stock        Int
+  category     Category       @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  imageUrl     String         @db.VarChar(255)
+  created_at   DateTime       @default(now())
+  OrderDetails OrderDetails[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(255)
+  products Product[]
+}
+
+model Order {
+  id            Int            @id @default(autoincrement())
+  user          User           @relation(fields: [userId], references: [id])
+  userId        Int
+  amount        Decimal        @db.Decimal(10, 2)
+  status        OrderStatus    @default(pending)
+  address       String         @db.VarChar(255)
+  created_at    DateTime       @default(now())
+  order_details OrderDetails[]
+}
+
+enum OrderStatus {
+  pending
+  completed
+}
+
+model OrderDetails {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+}
