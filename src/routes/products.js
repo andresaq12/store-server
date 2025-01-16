@@ -105,6 +105,7 @@ router.post('/products', upload.single('image'), async (req, res) => {
     const newBody = {
       ...req.body,
       imageUrl: secure_url,
+      price: Number(req.body.price),
       stock: Number(req.body.stock),
       categoryId: Number(req.body.categoryId)
     }
