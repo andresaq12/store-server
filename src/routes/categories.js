@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client"
 const router = Router()
 const prisma = new PrismaClient()
 
+// GET ALL CATEGORIES
 router.get('/categories', async (req, res) => {
   try {
     const category = await prisma.category.findMany()
@@ -13,9 +14,10 @@ router.get('/categories', async (req, res) => {
   }
 })
 
-router.get('/users/:id', async (req, res) => {
+// GET CATEGORY BY ID
+router.get('/categories/:id', async (req, res) => {
   try {
-    const { id } = req.body
+    const { id } = req.params
     const category = await prisma.category.findUnique({
       where: {
         id: id,
@@ -27,6 +29,7 @@ router.get('/users/:id', async (req, res) => {
   }
 })
 
+// POST A CATEGORY
 router.post('/categories', async (req, res) => {
   try {
     const newCategory = await prisma.category.create({
@@ -38,9 +41,10 @@ router.post('/categories', async (req, res) => {
   }
 })
 
-router.patch('/categories', async (req, res) => {
+// UPDATE A CATEGORY
+router.patch('/categories/:id', async (req, res) => {
   try {
-    const { id } = req.body
+    const { id } = req.params
     const updateCategory = await prisma.category.update({
       where: {
         id: id
@@ -50,6 +54,21 @@ router.patch('/categories', async (req, res) => {
     res.json(updateCategory)
   } catch (error) {
     res.status(500).json({ message: 'Error updating category' })
+  }
+})
+
+// DELETE A CATEGORY
+router.delete('/categories/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const deleteCategory = await prisma.category.findUnique({
+      where: {
+        id: id
+      }
+    })
+    res.json(deleteCategory)
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting category' })
   }
 })
 
