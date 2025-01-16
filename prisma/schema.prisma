@@ -13,41 +13,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model Post {
-//   id        Int      @id @default(autoincrement())
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   title     String   @db.VarChar(255)
-//   content   String?
-//   published Boolean  @default(false)
-//   author    User     @relation(fields: [authorId], references: [id])
-//   authorId  Int
-// }
-
-// model Profile {
-//   id     Int     @id @default(autoincrement())
-//   bio    String?
-//   user   User    @relation(fields: [userId], references: [id])
-//   userId Int     @unique
-// }
-
-// model User {
-//   id      Int      @id @default(autoincrement())
-//   email   String   @unique
-//   name    String?
-//   posts   Post[]
-//   profile Profile?
-// }
-
 model User {
   id         Int        @id @default(autoincrement())
   name       String     @db.VarChar(255)
   email      String     @db.VarChar(255)
   password   String?
-  google_id  String     @db.VarChar(255)
+  google_id  String?    @db.VarChar(255)
   photo      String?
   orders     Order[]
-  address    String     @db.VarChar(255)
+  address    String?    @db.VarChar(255)
   rol        Role       @default(user)
   status     UserStatus @default(active)
   created_at DateTime   @default(now())
@@ -68,7 +42,7 @@ model Product {
   name         String         @db.VarChar(255)
   description  String         @db.VarChar(255)
   brand        String         @db.VarChar(255)
-  price        Decimal        @db.Decimal(10, 2)
+  price        Int
   stock        Int
   category     Category       @relation(fields: [categoryId], references: [id])
   categoryId   Int
@@ -87,7 +61,7 @@ model Order {
   id            Int            @id @default(autoincrement())
   user          User           @relation(fields: [userId], references: [id])
   userId        Int
-  amount        Decimal        @db.Decimal(10, 2)
+  amount        Int
   status        OrderStatus    @default(pending)
   address       String         @db.VarChar(255)
   created_at    DateTime       @default(now())
@@ -96,6 +70,7 @@ model Order {
 
 enum OrderStatus {
   pending
+  canceled
   completed
 }
 
@@ -106,5 +81,5 @@ model OrderDetails {
   product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
-  price     Decimal @db.Decimal(10, 2)
+  price     Int
 }
