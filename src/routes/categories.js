@@ -7,9 +7,14 @@ const prisma = new PrismaClient()
 // GET ALL CATEGORIES
 router.get('/categories', async (req, res) => {
   try {
-    const category = await prisma.category.findMany()
+    const category = await prisma.category.findMany({
+      orderBy: {
+        id: 'asc'
+      }
+    })
     res.json(category)
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: 'Error fetching categories' })
   }
 })
@@ -25,6 +30,7 @@ router.get('/categories/:id', async (req, res) => {
     })
     res.json(category)
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: 'Error fetching category' })
   }
 })
@@ -37,6 +43,7 @@ router.post('/categories', async (req, res) => {
     })
     res.json(newCategory)
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: 'Error saving category' })
   }
 })
@@ -53,6 +60,7 @@ router.patch('/categories/:id', async (req, res) => {
     })
     res.json(updateCategory)
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: 'Error updating category' })
   }
 })
