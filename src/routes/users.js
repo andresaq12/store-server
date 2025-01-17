@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { PrismaClient } from "@prisma/client"
+import { authenticateJWT, checkUserStatus } from "../middleware/authMiddleware.js"
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -19,10 +20,10 @@ router.get('/users', async (req, res) => {
   }
 })
 
-// GET USER BY ID
-router.get('/users/:id', async (req, res) => {
+// GET USER PROFILE - USER
+router.get('/users/profile', authenticateJWT, checkUserStatus, async (req, res) => {
+  const { id } = req.params
   try {
-    const { id } = req.params
     const user = await prisma.user.findUnique({
       where: {
         id: Number(id),
@@ -32,6 +33,22 @@ router.get('/users/:id', async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: 'Error fetching user' })
+  }
+})
+
+// GET USER BY ID - ADMIN
+router.get('/users/:id', authenticateJWT, checkUserStatus, async (req, res) => {
+  const { id } = req.params
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id
+      }
+    })
+    res.json(user)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: 'Error retrieving user' })
   }
 })
 
@@ -66,8 +83,8 @@ router.post('/users', async (req, res) => {
 
 // UPDATE USER
 router.patch('/users/:id', async (req, res) => {
+  const { id } = req.params
   try {
-    const { id } = req.params
     const updateUser = await prisma.user.update({
       where: {
         id: Number(id)
