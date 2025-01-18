@@ -22,11 +22,11 @@ router.get('/categories', authenticateJWT, autorizationUser('user', 'admin'), as
 
 // GET CATEGORY BY ID - ADMIN
 router.get('/categories/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
-  const { id } = req.params
+  const categoryId = req.params.id
   try {
     const category = await prisma.category.findUnique({
       where: {
-        id
+        id: Number(categoryId)
       }
     })
     res.json(category)
@@ -51,11 +51,11 @@ router.post('/categories', authenticateJWT, autorizationUser('admin'), async (re
 
 // UPDATE A CATEGORY - ADMIN
 router.patch('/categories/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
-  const { id } = req.params
+  const categoryId = req.params.id
   try {
     const updateCategory = await prisma.category.update({
       where: {
-        id
+        id: Number(categoryId)
       },
       data: req.body
     })
@@ -68,11 +68,11 @@ router.patch('/categories/:id', authenticateJWT, autorizationUser('admin'), asyn
 
 // DELETE A CATEGORY - ADMIN
 router.delete('/categories/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
-  const { id } = req.params
+  const categoryId = req.params.id
   try {
     const deleteCategory = await prisma.category.findUnique({
       where: {
-        id
+        id: Number(categoryId)
       }
     })
     res.json(deleteCategory)

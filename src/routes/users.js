@@ -38,11 +38,11 @@ router.get('/users/profile', authenticateJWT, autorizationUser('user'), async (r
 
 // GET USER BY ID - ADMIN
 router.get('/users/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
-  const { id } = req.params
+  const userId = req.params.id
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id
+        id: Number(userId)
       }
     })
     res.json(user)

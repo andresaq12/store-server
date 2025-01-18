@@ -22,11 +22,11 @@ router.get('/orders', authenticateJWT, autorizationUser('admin'), async (req, re
 
 // GET ORDER BY ID - USER
 router.get('/orders/:id', authenticateJWT, async (req, res) => {
+  const orderId = req.params.id
   try {
-    const { id } = req.params
     const order = await prisma.order.findUnique({
       where: {
-        id: Number(id)
+        id: Number(orderId)
       }
     })
     res.json(order)
@@ -92,7 +92,7 @@ router.patch('/orders/:id', authenticateJWT, autorizationUser('user', 'admin'), 
   try {
     const order = prisma.order.findUnique({
       where: {
-        id: orderId
+        id: Number(orderId)
       }
     })
 
