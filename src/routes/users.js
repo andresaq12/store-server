@@ -1,12 +1,12 @@
 import { Router } from "express"
 import { PrismaClient } from "@prisma/client"
-import { authenticateJWT, checkUserStatus } from "../middleware/authMiddleware.js"
+import { authenticateJWT, autorizationUser } from "../middleware/authMiddleware.js"
 
 const router = Router()
 const prisma = new PrismaClient()
 
-// GET ALL USERS
-router.get('/users', async (req, res) => {
+// GET ALL USERS - ADMIN
+router.get('/users', authenticateJWT, autorizationUser('admin'), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       orderBy: {
@@ -21,12 +21,12 @@ router.get('/users', async (req, res) => {
 })
 
 // GET USER PROFILE - USER
-router.get('/users/profile', authenticateJWT, checkUserStatus, async (req, res) => {
-  const { id } = req.params
+router.get('/users/profile', authenticateJWT, autorizationUser('user'), async (req, res) => {
+  const { id } = req.user
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: Number(id),
+        id
       }
     })
     res.json(user)
@@ -37,7 +37,7 @@ router.get('/users/profile', authenticateJWT, checkUserStatus, async (req, res) 
 })
 
 // GET USER BY ID - ADMIN
-router.get('/users/:id', authenticateJWT, checkUserStatus, async (req, res) => {
+router.get('/users/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
   const { id } = req.params
   try {
     const user = await prisma.user.findUnique({
@@ -52,13 +52,13 @@ router.get('/users/:id', authenticateJWT, checkUserStatus, async (req, res) => {
   }
 })
 
-// GET ORDERS FROM USER
-router.get('/users/:id/orders', async (req, res) => {
-  const { id } = req.params
+// GET ORDERS FROM USER - USER AND ADMIN
+router.get('/users/orders', authenticateJWT, autorizationUser('user', 'admin'), async (req, res) => {
+  const { id } = req.id
   try {
     const orders = await prisma.order.findMany({
       where: {
-        userId: Number(id)
+        userId: id
       }
     })
     res.json(orders)
@@ -68,26 +68,13 @@ router.get('/users/:id/orders', async (req, res) => {
   }
 })
 
-// POST AN USER
-router.post('/users', async (req, res) => {
-  try {
-    const users = await prisma.user.create({
-      data: req.body
-    })
-    res.json(users)
-  } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: 'Error saving user' })
-  }
-})
-
-// UPDATE USER
-router.patch('/users/:id', async (req, res) => {
-  const { id } = req.params
+// UPDATE USER - USER
+router.patch('/users/update', authenticateJWT, autorizationUser('user'), async (req, res) => {
+  const { id } = req.id
   try {
     const updateUser = await prisma.user.update({
       where: {
-        id: Number(id)
+        id
       },
       data: req.body
     })
