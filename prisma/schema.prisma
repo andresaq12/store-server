@@ -14,27 +14,21 @@ datasource db {
 }
 
 model User {
-  id         Int        @id @default(autoincrement())
-  name       String?    @db.VarChar(255)
-  email      String     @unique
+  id         Int      @id @default(autoincrement())
+  name       String?  @db.VarChar(255)
+  email      String   @unique
   password   String?
-  google_id  String?    @db.VarChar(255)
+  google_id  String?  @db.VarChar(255)
   photo      String?
   orders     Order[]
-  address    String?    @db.VarChar(255)
-  role       Role       @default(user)
-  status     UserStatus @default(active)
-  created_at DateTime   @default(now())
+  address    String?  @db.VarChar(255)
+  role       Role     @default(user)
+  created_at DateTime @default(now())
 }
 
 enum Role {
   user
   admin
-}
-
-enum UserStatus {
-  active
-  suspended
 }
 
 model Product {
