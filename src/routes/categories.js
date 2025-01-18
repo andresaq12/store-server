@@ -1,11 +1,12 @@
 import { Router } from "express"
 import { PrismaClient } from "@prisma/client"
+import { authenticateJWT, autorizationUser } from '../middleware/authMiddleware.js'
 
 const router = Router()
 const prisma = new PrismaClient()
 
-// GET ALL CATEGORIES
-router.get('/categories', async (req, res) => {
+// GET ALL CATEGORIES - USER AND ADMIN
+router.get('/categories', authenticateJWT, autorizationUser('user', 'admin'), async (req, res) => {
   try {
     const category = await prisma.category.findMany({
       orderBy: {
@@ -19,13 +20,13 @@ router.get('/categories', async (req, res) => {
   }
 })
 
-// GET CATEGORY BY ID
-router.get('/categories/:id', async (req, res) => {
+// GET CATEGORY BY ID - ADMIN
+router.get('/categories/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
+  const { id } = req.params
   try {
-    const { id } = req.params
     const category = await prisma.category.findUnique({
       where: {
-        id: id,
+        id
       }
     })
     res.json(category)
@@ -35,8 +36,8 @@ router.get('/categories/:id', async (req, res) => {
   }
 })
 
-// POST A CATEGORY
-router.post('/categories', async (req, res) => {
+// POST A CATEGORY - ADMIN
+router.post('/categories', authenticateJWT, autorizationUser('admin'), async (req, res) => {
   try {
     const newCategory = await prisma.category.create({
       data: req.body
@@ -48,13 +49,13 @@ router.post('/categories', async (req, res) => {
   }
 })
 
-// UPDATE A CATEGORY
-router.patch('/categories/:id', async (req, res) => {
+// UPDATE A CATEGORY - ADMIN
+router.patch('/categories/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
+  const { id } = req.params
   try {
-    const { id } = req.params
     const updateCategory = await prisma.category.update({
       where: {
-        id: id
+        id
       },
       data: req.body
     })
@@ -65,13 +66,13 @@ router.patch('/categories/:id', async (req, res) => {
   }
 })
 
-// DELETE A CATEGORY
-router.delete('/categories/:id', async (req, res) => {
+// DELETE A CATEGORY - ADMIN
+router.delete('/categories/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
+  const { id } = req.params
   try {
-    const { id } = req.params
     const deleteCategory = await prisma.category.findUnique({
       where: {
-        id: id
+        id
       }
     })
     res.json(deleteCategory)
