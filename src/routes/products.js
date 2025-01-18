@@ -1,20 +1,28 @@
 import { Router } from "express"
 import { PrismaClient } from "@prisma/client"
 import { v2 as cloudinary } from 'cloudinary'
+import { authenticateJWT, autorizationUser } from "../middleware/authMiddleware"
 import multer from "multer"
-import fs from 'fs'
-import path from 'path'
 
 const router = Router()
 const prisma = new PrismaClient()
+const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 
-// GET CURRENT PATH - ES6
-const currentPath = new URL(import.meta.url).pathname
-const normalizedPath = currentPath.replace(/^\/([A-Za-z]):/, '$1:')
-const parentPath = path.resolve(normalizedPath, '../../../')
-const filePath = path.join(parentPath, 'uploads');
+// FILTER FOR MULTER - ONLY IMAGES
+const fileFilter = (req, file, cb) => {
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true)
+  } else {
+    cb(new Error('Allowed images files (jpeg, png, gif, webp, avif)'), false)
+  }
+}
 
-const upload = multer({ dest: filePath })
+// CONFIG MULTER
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter
+})
 
 // CONFIG CLOUDINARY
 cloudinary.config({
@@ -23,22 +31,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET
 })
 
-// Delete temp image
-const deleteTempFile = (filePath) => {
-  return new Promise((resolve, reject) => {
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error('Error deleting file:', err)
-        reject(err)
-      } else {
-        console.log('Temporary file successfully deleted')
-        resolve()
-      }
-    });
-  });
-};
-
-// GET ALL PRODUCTS
+// GET ALL PRODUCTS - PUBLIC
 router.get('/products', async (req, res) => {
   try {
     const products = await prisma.product.findMany()
@@ -49,7 +42,7 @@ router.get('/products', async (req, res) => {
   }
 })
 
-// GET FILTERED PRODUCTS
+// GET FILTERED PRODUCTS - PUBLIC
 router.get('/products/filter', async (req, res) => {
   const { brand, min, max } = req.query
   try {
@@ -72,13 +65,13 @@ router.get('/products/filter', async (req, res) => {
   }
 })
 
-// GET PRODUCT BY ID
+// GET PRODUCT BY ID - PUBLIC
 router.get('/products/:id', async (req, res) => {
+  const productId = req.params.id
   try {
-    const { id } = req.params
     const product = await prisma.product.findUnique({
       where: {
-        id: Number(id)
+        id: productId
       }
     })
     res.json(product)
@@ -88,26 +81,28 @@ router.get('/products/:id', async (req, res) => {
   }
 })
 
-// POST A PRODUCT
-router.post('/products', upload.single('image'), async (req, res) => {
+// POST A PRODUCT - ADMIN
+router.post('/products', authenticateJWT, autorizationUser('admin'), upload.single('image'), async (req, res) => {
   const imageFile = req.file
-  const imagePath = path.join(filePath, req.file.filename);
+  const { price, stock, categoryId } = req.body
   try {
+    if (!imageFile) {
+      return res.status(400).json({ message: 'Image not found' })
+    }
+
     const { secure_url } = await cloudinary.uploader.upload(imageFile.path, {
       folder: 'ecommerce'
     })
     if (!secure_url) {
-      res.status(500).json({ message: 'Image not loaded correctly' })
+      return res.status(500).json({ message: 'Image not loaded correctly' })
     }
-    deleteTempFile(imagePath).catch((err) => {
-      console.error('Error while trying to delete the temporary file: ', err)
-    })
+
     const newBody = {
       ...req.body,
       imageUrl: secure_url,
-      price: Number(req.body.price),
-      stock: Number(req.body.stock),
-      categoryId: Number(req.body.categoryId)
+      price: Number(price),
+      stock: Number(stock),
+      categoryId: Number(categoryId)
     }
     const newProduct = await prisma.product.create({
       data: newBody
@@ -119,13 +114,14 @@ router.post('/products', upload.single('image'), async (req, res) => {
   }
 })
 
-// UPDATE A PRODUCT
-router.patch('/products/:id', async (req, res) => {
+// UPDATE A PRODUCT - ADMIN
+// verificar si 'id' es numero o string
+router.patch('/products/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
+  const productId = req.params
   try {
-    const { id } = req.params
     const updateProduct = await prisma.product.update({
       where: {
-        id: Number(id)
+        id: productId
       },
       data: req.body
     })
@@ -136,13 +132,13 @@ router.patch('/products/:id', async (req, res) => {
   }
 })
 
-// DELETE A PRODUCT
-router.delete('/products/:id', async (req, res) => {
+// DELETE A PRODUCT - ADMIN
+router.delete('/products/:id', authenticateJWT, autorizationUser('admin'), async (req, res) => {
+  const productId = req.params.id
   try {
-    const { id } = req.params
     const deleteProduct = await prisma.product.delete({
       where: {
-        id: Number(id)
+        id: productId
       }
     })
     res.json(deleteProduct)
