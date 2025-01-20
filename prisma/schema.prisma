@@ -17,8 +17,8 @@ model User {
   id         Int      @id @default(autoincrement())
   name       String?  @db.VarChar(255)
   email      String   @unique
-  password   String?
-  google_id  String?  @db.VarChar(255)
+  password   String
+  googleId   String   @unique
   photo      String?
   orders     Order[]
   address    String?  @db.VarChar(255)
