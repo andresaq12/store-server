@@ -5,8 +5,8 @@ import { authenticateJWT, autorizationUser } from '../middleware/authMiddleware.
 const router = Router()
 const prisma = new PrismaClient()
 
-// GET ALL CATEGORIES - USER AND ADMIN
-router.get('/categories', authenticateJWT, autorizationUser('user', 'admin'), async (req, res) => {
+// GET ALL CATEGORIES - PUBLIC
+router.get('/categories', async (req, res) => {
   try {
     const category = await prisma.category.findMany({
       orderBy: {
