@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { PrismaClient } from "@prisma/client"
 import { v2 as cloudinary } from 'cloudinary'
-import { authenticateJWT, autorizationUser } from "../middleware/authMiddleware"
+import { authenticateJWT, autorizationUser } from "../middleware/authMiddleware.js"
 import multer from "multer"
 
 const router = Router()
