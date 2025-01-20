@@ -20,15 +20,21 @@ router.get('/users', authenticateJWT, autorizationUser('admin'), async (req, res
   }
 })
 
-// GET USER PROFILE - USER
-router.get('/users/profile', authenticateJWT, autorizationUser('user'), async (req, res) => {
-  const { id } = req.user
+// GET USER PROFILE - USER AND ADMIN
+router.get('/users/profile', authenticateJWT, autorizationUser('user', 'admin'), async (req, res) => {
+  const { id, googleId } = req.user
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id
+        id: id || undefined,
+        googleId: googleId || undefined
       }
     })
+    // const user = await prisma.user.findUnique({
+    //   where: {
+    //     id
+    //   }
+    // })
     res.json(user)
   } catch (error) {
     console.log(error)

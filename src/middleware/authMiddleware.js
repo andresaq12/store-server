@@ -10,7 +10,7 @@ export const authenticateJWT = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    req.user = { id: decoded.id, email: decoded.email, role: decoded.role }
+    req.user = { id: decoded.id, googleId: decoded.googleId, email: decoded.email, role: decoded.role }
 
     next()
   } catch (error) {
