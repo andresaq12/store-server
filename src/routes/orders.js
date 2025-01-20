@@ -88,7 +88,7 @@ router.post('/orders', async (req, res) => {
 // UPDATE AN ORDER - USER OR ADMIN
 router.patch('/orders/:id', authenticateJWT, autorizationUser('user', 'admin'), async (req, res) => {
   const orderId = req.params.id
-  const { id, role } = req.user
+  const { role } = req.user
   try {
     const order = prisma.order.findUnique({
       where: {
@@ -106,7 +106,7 @@ router.patch('/orders/:id', authenticateJWT, autorizationUser('user', 'admin'), 
 
     const updateOrder = await prisma.order.update({
       where: {
-        id: id
+        id: orderId
       },
       data: req.body
     })
