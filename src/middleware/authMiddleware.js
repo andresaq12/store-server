@@ -1,10 +1,7 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
-
-const prisma = new PrismaClient()
 
 // CHECK JWT AND GET INFO FROM USER
 export const authenticateJWT = async (req, res, next) => {
@@ -13,7 +10,7 @@ export const authenticateJWT = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    req.user = { id: decoded.id, role: decoded.role }
+    req.user = { id: decoded.id, email: decoded.email, role: decoded.role }
 
     next()
   } catch (error) {
